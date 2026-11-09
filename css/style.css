@@ -1,0 +1,379 @@
+/* ==========================================================================
+   Un cielo lleno de deseos
+   ========================================================================== */
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("../assets/fuentes/PressStart2P-Regular.ttf") format("truetype");
+  font-display: block;
+}
+@font-face {
+  font-family: "VT323";
+  src: url("../assets/fuentes/VT323-Regular.ttf") format("truetype");
+  font-display: block;
+}
+
+:root {
+  --texto: #fff0fa;
+  --suave: #d6bae2;
+  --rosa: #ff96c8;
+  --celeste: #8ccdff;
+  --oro: #ffde8c;
+  --panel: rgba(26, 12, 50, 0.855);
+  --e: 4px;                                  /* tamaño de las esquinas escalonadas */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0418;
+  color: var(--texto);
+  font-family: "VT323", "Consolas", "Courier New", monospace;
+  font-size: 30px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; }
+.oculto, [hidden] { display: none !important; }
+
+/* La escena mide siempre 1280 x 768 y se escala para caber en la ventana */
+#escena {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1280px;
+  height: 768px;
+  transform: translate(-50%, -50%) scale(var(--escala, 1));
+  transform-origin: center center;
+  overflow: hidden;
+  background: #0b0418;
+}
+#lienzo { display: block; width: 1280px; height: 768px; touch-action: manipulation; }
+
+/* ---- panel pixel art con esquinas escalonadas ------------------------------ */
+.px {
+  --borde: var(--rosa);
+  --fondo: var(--panel);
+  position: relative;
+  isolation: isolate;
+  background: var(--borde);
+  clip-path: polygon(
+    var(--e) 0, calc(100% - var(--e)) 0, calc(100% - var(--e)) var(--e), 100% var(--e),
+    100% calc(100% - var(--e)), calc(100% - var(--e)) calc(100% - var(--e)),
+    calc(100% - var(--e)) 100%, var(--e) 100%, var(--e) calc(100% - var(--e)),
+    0 calc(100% - var(--e)), 0 var(--e), var(--e) var(--e));
+}
+.px::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: var(--fondo);
+  z-index: -1;
+  clip-path: polygon(
+    calc(var(--e) - 2px) 0, calc(100% - var(--e) + 2px) 0, calc(100% - var(--e) + 2px) calc(var(--e) - 2px),
+    100% calc(var(--e) - 2px), 100% calc(100% - var(--e) + 2px),
+    calc(100% - var(--e) + 2px) calc(100% - var(--e) + 2px), calc(100% - var(--e) + 2px) 100%,
+    calc(var(--e) - 2px) 100%, calc(var(--e) - 2px) calc(100% - var(--e) + 2px),
+    0 calc(100% - var(--e) + 2px), 0 calc(var(--e) - 2px), calc(var(--e) - 2px) calc(var(--e) - 2px));
+}
+.px > * { position: relative; z-index: 1; }
+
+/* ---- controles (arriba a la derecha) --------------------------------------- */
+#barra {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+}
+.ctl { position: relative; }
+.ctl::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: 44px;
+  right: 0;
+  white-space: nowrap;
+  padding: 2px 10px;
+  font-size: 24px;
+  line-height: 28px;
+  color: var(--texto);
+  background: rgba(20, 8, 40, 0.92);
+  border: 2px solid #9664b4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  z-index: 5;
+}
+.ctl:hover::after { opacity: 1; }
+
+.boton {
+  --borde: var(--suave);
+  --fondo: rgba(36, 16, 64, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  color: var(--texto);
+}
+.boton:hover:not(.inactivo) { --borde: var(--rosa); --fondo: rgba(70, 30, 100, 0.92); color: var(--rosa); }
+#btn-deseos:hover { --borde: var(--oro); color: var(--oro); }
+.boton svg { display: block; }
+.boton.inactivo { --borde: #6e5a82; color: #78648c; cursor: default; }
+
+#btn-deseos { position: relative; }
+#cuenta-deseos {
+  position: absolute;
+  right: 4px;
+  bottom: -2px;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--oro);
+  pointer-events: none;
+}
+
+.boton.volumen { width: 104px; cursor: pointer; }
+.volumen input[type="range"] {
+  --lleno: 50%;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 84px;
+  height: 24px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.volumen input[type="range"]:focus { outline: none; }
+.volumen input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: linear-gradient(90deg, var(--rosa) var(--lleno), #5a3c78 var(--lleno));
+}
+.volumen input[type="range"]::-moz-range-track { height: 6px; background: #5a3c78; }
+.volumen input[type="range"]::-moz-range-progress { height: 6px; background: var(--rosa); }
+.volumen input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 8px;
+  height: 18px;
+  margin-top: -6px;
+  background: var(--texto);
+  border: 0;
+  border-radius: 0;
+}
+.volumen input[type="range"]::-moz-range-thumb {
+  width: 8px;
+  height: 18px;
+  background: var(--texto);
+  border: 0;
+  border-radius: 0;
+}
+
+/* ---- mensajes flotantes ----------------------------------------------------- */
+#mensajes { position: absolute; inset: 0; pointer-events: none; }
+.mensaje {
+  --acento: var(--celeste);
+  position: absolute;
+  padding-top: 12px;
+  width: max-content;
+  max-width: 564px;
+  opacity: 0;
+}
+.mensaje.romantico { --acento: var(--rosa); }
+.mensaje.deseo { --acento: var(--oro); }
+.mensaje .cuerpo {
+  --borde: var(--acento);
+  --fondo: rgba(24, 10, 48, 0.89);
+  padding: 20px 22px 12px;
+  text-align: center;
+  line-height: 27px;
+}
+.mensaje .insignia {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 16px);
+  width: 32px;
+  height: 21px;
+  display: flex;
+  justify-content: center;
+  color: var(--acento);
+  z-index: 2;
+}
+.mensaje .insignia::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 32px;
+  height: 8px;
+  background: #180a30;
+  z-index: -1;
+}
+.m-titulo {
+  font-family: "Press Start 2P", monospace;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--acento);
+  margin: 0 0 12px;
+}
+.m-texto { max-width: 520px; }
+.m-pie { font-size: 24px; color: var(--suave); margin-top: 8px; }
+
+/* ---- aviso inferior ----------------------------------------------------------- */
+#aviso {
+  --borde: #9664b4;
+  --fondo: rgba(20, 8, 40, 0.78);
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  padding: 4px 18px 6px;
+  white-space: nowrap;
+  line-height: 32px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- ventanas modales -------------------------------------------------------- */
+.velo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 4, 30, 0.51);
+  z-index: 10;
+}
+.ventana {
+  --borde: var(--rosa);
+  --fondo: rgba(26, 12, 52, 0.96);
+  --e: 6px;
+}
+.ventana.oro { --borde: var(--oro); }
+.ventana h2 {
+  margin: 0;
+  font-family: "Press Start 2P", monospace;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 20px;
+}
+.ventana .sub { margin: 0; color: var(--suave); line-height: 30px; }
+.ventana .sub.peq { font-size: 24px; line-height: 26px; }
+
+.btn {
+  --borde: var(--suave);
+  --fondo: rgba(36, 16, 64, 0.92);
+  width: 190px;
+  height: 44px;
+  padding: 0 0 2px;
+  border: 0;
+  color: var(--texto);
+  line-height: 1;
+}
+.btn:hover:not(:disabled) { --borde: var(--rosa); --fondo: rgba(70, 30, 100, 0.92); }
+.btn.oro:hover:not(:disabled) { --borde: var(--oro); }
+.btn:disabled { --borde: #6e5a82; color: #8c78a0; cursor: default; }
+
+/* pedir un deseo */
+#dialogo { padding-bottom: 60px; }
+#ventana-deseo {
+  width: 720px;
+  height: 372px;
+  padding: 26px 30px 30px;
+  text-align: center;
+}
+#ventana-deseo h2 { color: var(--oro); }
+#ventana-deseo .sub { margin-top: 20px; }
+#deseo-texto {
+  display: block;
+  width: 100%;
+  height: 150px;
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  resize: none;
+  overflow: hidden;
+  font: inherit;
+  line-height: 26px;
+  color: var(--texto);
+  caret-color: var(--rosa);
+  background: #0e061e;
+  border: 2px solid #9664b4;
+  border-radius: 0;
+  text-align: left;
+  -webkit-user-select: text;
+  user-select: text;
+}
+#deseo-texto:focus { outline: none; border-color: var(--oro); }
+#ventana-deseo .contador {
+  margin-top: 2px;
+  font-size: 24px;
+  line-height: 24px;
+  text-align: right;
+  color: var(--suave);
+}
+#ventana-deseo .acciones {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  display: flex;
+  gap: 14px;
+}
+
+/* lista de deseos */
+#ventana-lista { --e: 6px; width: 740px; height: 560px; }
+#ventana-lista h2 { position: absolute; left: 30px; top: 28px; color: var(--rosa); }
+#lista-cerrar { position: absolute; right: 18px; top: 18px; }
+#lista-sub { position: absolute; left: 30px; top: 60px; }
+#lista-items {
+  position: absolute;
+  left: 26px;
+  top: 92px;
+  right: 26px;
+  bottom: 26px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rosa) transparent;
+}
+#lista-items::-webkit-scrollbar { width: 6px; }
+#lista-items::-webkit-scrollbar-thumb { background: var(--rosa); }
+#lista-vacio {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--suave);
+}
+#lista-vacio p { margin: 0; line-height: 34px; }
+
+.item-deseo {
+  display: block;
+  width: 100%;
+  height: 82px;
+  margin: 4px 0 6px;
+  padding: 4px 14px 0;
+  text-align: left;
+  color: var(--texto);
+  background: #281246;
+  border: 2px solid #6e468c;
+  border-radius: 0;
+}
+.item-deseo:hover, .item-deseo:focus-visible { background: #462068; border-color: var(--oro); outline: none; }
+.di-cab { display: flex; align-items: center; gap: 12px; color: var(--oro); height: 26px; }
+.di-fecha { font-size: 24px; color: var(--suave); }
+.di-texto {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 2px;
+  line-height: 26px;
+}

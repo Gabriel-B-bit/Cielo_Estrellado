@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Un cielo lleno de deseos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="escena">
+    <canvas id="lienzo" width="1280" height="768"></canvas>
+
+    <div id="mensajes"></div>
+
+    <div id="aviso" class="px"><span></span></div>
+
+    <!-- controles -->
+    <div id="barra">
+      <div class="ctl" data-tip="Pausar música">
+        <button id="btn-musica" class="px boton" type="button" aria-label="Música"><span id="ico-musica"></span></button>
+      </div>
+      <div class="ctl" data-tip="Volumen">
+        <div class="px boton volumen">
+          <input id="volumen" type="range" min="0" max="100" step="1" value="50" aria-label="Volumen">
+        </div>
+      </div>
+      <div class="ctl" data-tip="Mis deseos">
+        <button id="btn-deseos" class="px boton" type="button" aria-label="Mis deseos">
+          <span id="ico-deseos"></span><span id="cuenta-deseos"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ventana para pedir un deseo -->
+    <div id="dialogo" class="velo oculto" role="dialog" aria-modal="true" aria-labelledby="dialogo-titulo">
+      <div class="px ventana oro" id="ventana-deseo">
+        <h2 id="dialogo-titulo">Pide un deseo</h2>
+        <p class="sub">Escríbelo aquí y se convertirá en una estrella.</p>
+        <textarea id="deseo-texto" rows="4" spellcheck="false" autocomplete="off" aria-label="Tu deseo"></textarea>
+        <div class="contador" id="deseo-cuenta">0/160</div>
+        <div class="acciones">
+          <button id="deseo-cancelar" class="px btn" type="button">Cancelar</button>
+          <button id="deseo-guardar" class="px btn oro" type="button" disabled>Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- lista de deseos -->
+    <div id="lista" class="velo oculto" role="dialog" aria-modal="true" aria-labelledby="lista-titulo">
+      <div class="px ventana rosa" id="ventana-lista">
+        <h2 id="lista-titulo">Mis deseos</h2>
+        <button id="lista-cerrar" class="px boton" type="button" aria-label="Cerrar"><span id="ico-cerrar"></span></button>
+        <p id="lista-sub" class="sub peq"></p>
+        <div id="lista-items"></div>
+        <div id="lista-vacio">
+          <p>Aún no has pedido ningún deseo.</p>
+          <p>Atrapa una estrella fugaz y escribe el primero.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="musica" src="assets/musica.mp3" loop preload="auto"></audio>
+
+  <script src="js/config.js"></script>
+  <script src="js/escenario.js"></script>
+  <script src="js/princesa.js"></script>
+  <script src="js/interfaz.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
